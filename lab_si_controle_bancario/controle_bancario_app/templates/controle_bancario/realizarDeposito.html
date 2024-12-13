@@ -1,0 +1,25 @@
+{% extends "controle_bancario/layout.html" %}
+{% block title %}
+Realização de Depósito em Conta de Cliente
+{% endblock %}
+{% block content %}
+<h3>Depósito em Conta de Cliente</h3>
+<br>
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form method="POST" class="realizarDeposito-form" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p>Por favor ingressar os dados da conta a depositar:</p>
+    <br>
+    <label>CPF do cliente:</label> <input type="text" id="cpfPessoa" name="cpfPessoa"> <br><br>
+    <label>Número da Conta:</label> <input type="text" id="numeroConta" name="numeroConta"> <br><br>
+    <label>Valor a depositar:</label> <input type="text" id="valorMovimento" name="valorMovimento"> <br><br>
+    <br><br>
+    <button type="submit" class="save btn btn-default">Realizar Deposito</button>
+</form>
+
+<section>
+    <p type="text" id="resposta" name="resposta"> {{ resposta }} </p> <br><br>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "controle_bancario/layout.html" %}
+{% block title %}
+Atualizar Dados Cliente
+{% endblock %}
+{% block content %}
+<h3>Atualizar Dados Cliente</h3>
+<br>
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form method="POST" class="atualizarDadosCliente-form" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p>Gerenciar Dados do cliente:</p>
+    <br>
+    <label>Nome do cliente:</label> <input type="text" id="nomePessoa" name="nomePessoa" value = {{ cliente.nomePessoa }} > <br><br>
+    <label>CPF do cliente:</label> <input type="text" id="cpfPessoa" name="cpfPessoa" value = {{ cliente.cpfPessoa }} readonly disabled="disabled"> <br><br>
+    <label>RG do cliente:</label> <input type="text" id="rgPessoa" name="rgPessoa" value = {{ cliente.rgPessoa }} readonly disabled="disabled"> <br><br>
+    <label>Data de nascimento:</label> <input type="date" id="dataNascimento" name="dataNascimento" value = {{ cliente.dataNascimento }} readonly disabled="disabled"> <br><br>
+    <label>Endereço do cliente:</label> <input type="text" id="enderecoPessoa" name="enderecoPessoa" value = {{ cliente.enderecoPessoa }}> <br><br>
+    <label>CEP:</label> <input type="text" id="cepPessoa" name="cepPessoa" value = {{ cliente.cepPessoa }}> <br><br>
+    <label>Telefone do cliente:</label> <input type="text" id="telefonePessoa" name="telefonePessoa" value = {{ cliente.telefonePessoa }}> <br><br>
+    <label>Renda do cliente:</label> <input type="text" id="rendaPessoa" name="rendaPessoa" value = {{ cliente.rendaPessoa }}> <br><br>
+    <br><br>
+    <button type="submit" class="save btn btn-default">Atualizar Cliente</button>
+</form>
+
+<section>
+    <p type="text" id="resposta" name="resposta"> {{ resposta }} </p> <br><br>
+</section>
+{% endblock %}
