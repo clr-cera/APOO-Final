@@ -3,8 +3,11 @@ from .models import Simulacao
 from itertools import product
 
 import matplotlib.pyplot as plt
+import graphviz
 import io
 import base64
+
+from random import randint, shuffle, sample
 
 def realizar_simulacao(request):
     """Função principal que realiza a simulação genética."""
@@ -29,7 +32,6 @@ def realizar_simulacao(request):
                     pai, mae = pais[i], pais[i + 1]
                     filhos = gerar_combinacoes(pai, mae)
                     nova_geracao.extend(filhos)
-            nova_geracao = list(set(nova_geracao))  # Remove duplicatas
             if not nova_geracao:  # Se não houver filhos válidos, interrompe o loop
                 break
             geracoes.append(nova_geracao)
@@ -46,6 +48,8 @@ def realizar_simulacao(request):
 
         # Gera o gráfico das frequências
         img = gerar_grafico(estatisticas)
+        dot = criar_heredograma_genetico(geracoes)
+        dot.render(directory='.', view=True)
 
         return render(request, 'resultado_simulacao.html', {
             'simulacao': simulacao,
@@ -60,17 +64,30 @@ def realizar_simulacao(request):
 
 def gerar_combinacoes(pai, mae):
     """Gera combinações válidas de genes entre dois genomas."""
+    filhos = []
     genes_pai = [pai[i:i + 2] for i in range(0, len(pai), 2)]  # Divide em pares de alelos
     genes_mae = [mae[i:i + 2] for i in range(0, len(mae), 2)]
 
-    # Gera todas as combinações válidas para cada par
-    combinacoes = product(*[
-        [a1 + a2 for a1 in sorted(set(pai_)) for a2 in sorted(set(mae_))]
-        for pai_, mae_ in zip(genes_pai, genes_mae)
-    ])
+    for i in range(4):
+        for j in range(len(genes_pai)):
+            l = list(genes_pai[j])
+            shuffle(l)
+            genes_pai[j] = ''.join(l)
 
-    filhos = [''.join(filho) for filho in combinacoes]
-    return sorted(set(filhos))  # Remove duplicatas
+        for j in range(len(genes_mae)):
+            l = list(genes_mae[j])
+            shuffle(l)
+            genes_mae[j] = ''.join(l)
+
+        filho = []
+        for j in range(len(genes_pai)):
+            filho.append(''.join(genes_pai[j][0] + genes_mae[j][0]))
+
+        filho = ''.join(filho)
+
+        filhos.append(filho)
+
+    return filhos  # Remove duplicatas
 
 
 def calcular_estatisticas(geracoes):
@@ -135,3 +152,60 @@ def gerar_grafico(estatisticas):
     buffer.close()
     plt.close()  # Fecha a figura para liberar memória
     return f"data:image/png;base64,{img}"
+
+
+def criar_heredograma_genetico(geracoes, titulo="Heredograma Genético"):
+    """
+    Cria um heredograma a partir das gerações da simulação genética.
+
+    Parâmetros:
+    - geracoes: Lista de gerações de genomas
+    - titulo: Título do heredograma (opcional)
+
+    Retorna:
+    - Objeto graphviz.Digraph representando o heredograma
+    """
+    # Cria um novo grafo direcionado
+    dot = graphviz.Digraph(comment=titulo, engine='dot')
+    dot.attr(rankdir='TB')  # Layout de cima para baixo
+    dot.attr('node', shape='box')
+
+    # Define o título do grafo
+    dot.attr(label=titulo)
+    dot.attr(labelloc='t')
+
+    # Dicionário para mapear nós de cada geração
+    node_map = {}
+
+    # Itera sobre as gerações
+    for gen_index, geracao in enumerate(geracoes):
+        # Cria um subgrafo para manter a geração no mesmo nível
+        with dot.subgraph() as gen_subgraph:
+            gen_subgraph.attr(rank='same')
+
+            # Processa cada genoma na geração
+            for genome_index, genoma in enumerate(geracao):
+                # Cria um identificador único para o nó
+                node_id = f'gen{gen_index}_genome{genome_index}'
+
+                # Cria o nó com o genoma como label
+                gen_subgraph.node(node_id, label=genoma,
+                                  style='filled',
+                                  fillcolor='lightblue')
+
+                # Armazena o ID do nó para possíveis conexões
+                if gen_index not in node_map:
+                    node_map[gen_index] = []
+                node_map[gen_index].append(node_id)
+
+                # Conecta com a geração anterior, se existir
+                if gen_index > 0:
+                    # Tenta conectar com os pais prováveis
+                    # Assume uma relação de parentesco simples
+                    parent_index = (genome_index // 4) * 2
+                    if parent_index < len(node_map[gen_index - 1]):
+                        parent_id = node_map[gen_index - 1][parent_index]
+                        parent_id_2 = node_map[gen_index - 1][parent_index+1]
+                        dot.edge(parent_id, node_id)
+                        dot.edge(parent_id_2, node_id)
+    return dot
