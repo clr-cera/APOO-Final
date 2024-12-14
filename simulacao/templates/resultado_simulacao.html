@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <title>Resultado da Simulação</title>
+</head>
+<body>
+    <h1>Resultado da Simulação</h1>
+    <pre>{{ simulacao.resultado }}</pre>
+
+    <h2>Relatório Estatístico (Porcentagens)</h2>
+    {% for estatistica in estatisticas %}
+        <h3>{{ estatistica.Geração }}</h3>
+        <ul>
+            {% for alelo, porcentagem in estatistica.Porcentagem.items %}
+                <li>{{ alelo }}: {{ porcentagem|floatformat:2 }}%</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    
+
+    <h2>Gráfico de Frequência</h2>
+    <img src="{{ grafico }}" alt="Gráfico de Frequência de Alelos">
+</body>
+</html>
