@@ -49,12 +49,15 @@ def realizar_simulacao(request):
         # Gera o gráfico das frequências
         img = gerar_grafico(estatisticas)
         dot = criar_heredograma_genetico(geracoes)
-        dot.render(directory='.', view=True)
+        dot.format = 'png'
+        img_data = dot.pipe()
+        heredograma_base64 = base64.b64encode(img_data).decode('utf-8')
 
         return render(request, 'resultado_simulacao.html', {
             'simulacao': simulacao,
             'estatisticas': estatisticas,
-            'grafico': img
+            'grafico': img,
+            'heredograma': f"data:image/png;base64,{heredograma_base64}"
         })
 
     return render(request, 'realizar_simulacao.html')
@@ -202,7 +205,7 @@ def criar_heredograma_genetico(geracoes, titulo="Heredograma Genético"):
                 if gen_index > 0:
                     # Tenta conectar com os pais prováveis
                     # Assume uma relação de parentesco simples
-                    parent_index = (genome_index // 4) * 2
+                    parent_index = (genome_index // 4) *2
                     if parent_index < len(node_map[gen_index - 1]):
                         parent_id = node_map[gen_index - 1][parent_index]
                         parent_id_2 = node_map[gen_index - 1][parent_index+1]
