@@ -77,6 +77,18 @@
             margin-top: 20px;
         }
 
+        .heredograma-container {
+            text-align: center;
+            margin-top: 20px;
+            overflow-x: auto;  /* Horizontal scrolling */
+            overflow-y: hidden;  /* Prevent vertical scrolling */
+        }
+        .heredograma-container img {
+            width: auto;
+            height: auto;
+            border-radius: 4px;
+        }
+
         .grafico-container img {
             max-width: 100%;
             height: auto;
@@ -115,9 +127,11 @@
             <h2>Gráfico de Frequência</h2>
             <img src="{{ grafico }}" alt="Gráfico de Frequência de Alelos">
         </div>
-        <div class="grafico-container">
+        <div class="heredograma-container">
             <h2>Heredograma</h2>
-            <img src="{{ heredograma }}" alt="Heredograma Genético">
+            <div class="heredograma-container">
+                <img src="{{ heredograma }}" alt="Heredograma Genético">
+            </div>
         </div>
     </div>
 </body>
