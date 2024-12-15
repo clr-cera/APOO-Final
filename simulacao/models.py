@@ -10,10 +10,14 @@ class Genoma(models.Model):
 
 class Simulacao(models.Model):
     id = models.AutoField(primary_key=True)
+    genes_pais = models.TextField(default="")
     numero_geracoes = models.PositiveIntegerField()
     resultado = models.TextField(blank=True, null=True)
     estatisticas = models.JSONField(blank=True, null=True)  # Salva estatísticas em JSON
+    grafico_dados = models.JSONField(blank=True, null=True)  # Dados do gráfico
+    heredograma_dados = models.JSONField(blank=True, null=True)  # Dados do heredograma
     data_criacao = models.DateTimeField(auto_now_add=True)
+
 
     genomas = models.ManyToManyField(Genoma)
 

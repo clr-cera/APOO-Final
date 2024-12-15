@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Simulações</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #ecf0f1;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .simulacao-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .simulacao-card h2 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: white;
+            background-color: var(--secondary-color);
+            border-radius: 5px;
+            text-align: center;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-color);
+        }
+
+        .empty-message {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Simulações</h1>
+
+        {% if simulacoes %}
+            {% for simulacao in simulacoes %}
+                <div class="simulacao-card">
+                    <div>
+                        <h2>Simulação {{ simulacao.id }}</h2>
+                        <p><strong>Gerações:</strong> {{ simulacao.numero_geracoes }}</p>
+                        <p><strong>Genes dos Pais:</strong> {{ simulacao.genes_pais }}</p>
+                        <p><strong>Data de Criação:</strong> {{ simulacao.data_criacao }}</p>
+                    </div>
+                    <a href="{% url 'visualizar_simulacao' simulacao.id %}" class="btn">Visualizar</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty-message">Nenhuma simulação encontrada.</p>
+        {% endif %}
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'realizar_simulacao' %}" class="btn">Nova Simulação</a>
+        </div>
+    </div>
+</body>
+</html>

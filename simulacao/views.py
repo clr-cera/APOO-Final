@@ -1,11 +1,17 @@
-from django.shortcuts import render
-from .models import Simulacao
-from itertools import product
-
+import matplotlib
+matplotlib.use('Agg')  # Define o backend adequado para uso no Django
 import matplotlib.pyplot as plt
 import graphviz
 import io
 import base64
+import json
+
+
+from random import randint, shuffle, sample
+from django.shortcuts import render
+from .models import Simulacao
+from itertools import product
+
 
 from random import randint, shuffle, sample
 
@@ -32,7 +38,7 @@ def realizar_simulacao(request):
                     pai, mae = pais[i], pais[i + 1]
                     filhos = gerar_combinacoes(pai, mae)
                     nova_geracao.extend(filhos)
-            if not nova_geracao:  # Se não houver filhos válidos, interrompe o loop
+            if not nova_geracao:
                 break
             geracoes.append(nova_geracao)
 
@@ -42,26 +48,31 @@ def realizar_simulacao(request):
         # Salva a simulação no banco de dados
         simulacao = Simulacao.objects.create(
             numero_geracoes=numero_geracoes,
+            genes_pais=", ".join(sequencias_genomas),
             resultado="\n".join([f"Geração {i+1}: {', '.join(geracao)}" for i, geracao in enumerate(geracoes)]),
-            estatisticas=str(estatisticas)
+            estatisticas=estatisticas,  # Salva como JSON
+            grafico_dados=estatisticas,
+            heredograma_dados={'geracoes': geracoes}
         )
 
-        # Gera o gráfico das frequências
+        # Gera o gráfico
         img = gerar_grafico(estatisticas)
+
+        # Gera o heredograma
         dot = criar_heredograma_genetico(geracoes)
         dot.format = 'png'
         img_data = dot.pipe()
         heredograma_base64 = base64.b64encode(img_data).decode('utf-8')
 
+        # Passa estatísticas explicitamente para o template
         return render(request, 'resultado_simulacao.html', {
             'simulacao': simulacao,
-            'estatisticas': estatisticas,
+            'estatisticas': estatisticas,  # Passa para o template
             'grafico': img,
             'heredograma': f"data:image/png;base64,{heredograma_base64}"
         })
 
     return render(request, 'realizar_simulacao.html')
-
 
 
 
@@ -212,3 +223,103 @@ def criar_heredograma_genetico(geracoes, titulo="Heredograma Genético"):
                         dot.edge(parent_id, node_id)
                         dot.edge(parent_id_2, node_id)
     return dot
+
+def recriar_grafico(dados):
+    """Recria o gráfico de frequências baseado nos dados salvos."""
+    plt.figure(figsize=(10, 6))
+
+    geracoes = [f"Geração {dados['Geração']}" for dados in dados]
+    frequencias = {}
+
+    # Inicializa com frequências
+    for dados_item in dados:
+        for alelo in dados_item['Porcentagem']:
+            if alelo not in frequencias:
+                frequencias[alelo] = [0] * len(dados)
+
+    # Preenche as porcentagens reais
+    for i, dados_item in enumerate(dados):
+        for alelo, porcentagem in dados_item['Porcentagem'].items():
+            frequencias[alelo][i] = porcentagem
+
+    # Plota as frequências em porcentagem
+    for idx, (alelo, freq) in enumerate(frequencias.items()):
+        linestyle = '--' if idx % 2 == 0 else '-'
+        marker = 'o' if idx % 2 == 0 else 's'
+        plt.plot(geracoes, freq, label=f"{alelo}", linestyle=linestyle, marker=marker)
+
+    # Configurações do gráfico
+    plt.title("Porcentagem de Frequência Genética por Geração")
+    plt.xlabel("Gerações")
+    plt.ylabel("Porcentagem (%)")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+
+    # Salvar imagem em base64
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    img = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    buffer.close()
+    plt.close()
+
+    return f"data:image/png;base64,{img}"
+
+def recriar_heredograma(dados):
+    """Recria o heredograma baseado nos dados salvos."""
+    geracoes = dados['geracoes']
+    dot = graphviz.Digraph(comment="Heredograma Genético", engine='dot')
+    dot.attr(rankdir='TB')
+    dot.attr('node', shape='box')
+
+    node_map = {}
+    for gen_index, geracao in enumerate(geracoes):
+        with dot.subgraph() as gen_subgraph:
+            gen_subgraph.attr(rank='same')
+
+            for genome_index, genoma in enumerate(geracao):
+                node_id = f'gen{gen_index}_genome{genome_index}'
+                gen_subgraph.node(node_id, label=genoma, style='filled', fillcolor='lightblue')
+
+                if gen_index not in node_map:
+                    node_map[gen_index] = []
+                node_map[gen_index].append(node_id)
+
+                if gen_index > 0:
+                    parent_index = (genome_index // 4) * 2
+                    if parent_index < len(node_map[gen_index - 1]):
+                        dot.edge(node_map[gen_index - 1][parent_index], node_id)
+                        dot.edge(node_map[gen_index - 1][parent_index + 1], node_id)
+    return dot
+
+def listar_simulacoes(request):
+    """Lista todas as simulações salvas no banco de dados."""
+    simulacoes = Simulacao.objects.all()  # Busca todas as simulações
+    return render(request, 'listar_simulacoes.html', {'simulacoes': simulacoes})
+
+def visualizar_simulacao(request, simulacao_id):
+    """Visualiza os detalhes de uma simulação específica."""
+    simulacao = Simulacao.objects.get(id=simulacao_id)
+
+    # Recria o gráfico
+    grafico = recriar_grafico(simulacao.grafico_dados)
+
+    # Recria o heredograma
+    heredograma_dot = recriar_heredograma(simulacao.heredograma_dados)
+    heredograma_dot.format = 'png'
+    heredograma_img_data = heredograma_dot.pipe()
+    heredograma_base64 = base64.b64encode(heredograma_img_data).decode('utf-8')
+
+    # Garante que as estatísticas estão desserializadas
+    if isinstance(simulacao.estatisticas, str):
+        estatisticas = json.loads(simulacao.estatisticas)
+    else:
+        estatisticas = simulacao.estatisticas
+
+    return render(request, 'visualizar_simulacao.html', {
+        'simulacao': simulacao,
+        'estatisticas': estatisticas,
+        'grafico': grafico,
+        'heredograma': f"data:image/png;base64,{heredograma_base64}"
+    })

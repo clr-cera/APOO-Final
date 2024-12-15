@@ -95,6 +95,25 @@
             border-radius: 4px;
         }
 
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            text-decoration: none;
+            color: white;
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-color);
+        }
+
         @media (max-width: 600px) {
             .estatisticas-container {
                 grid-template-columns: 1fr;
@@ -132,6 +151,11 @@
             <div class="heredograma-container">
                 <img src="{{ heredograma }}" alt="Heredograma Genético">
             </div>
+        </div>
+
+        <!-- Botão para Listar Simulações -->
+        <div style="text-align: center;">
+            <a href="{% url 'listar_simulacoes' %}" class="btn">Listar Simulações</a>
         </div>
     </div>
 </body>
