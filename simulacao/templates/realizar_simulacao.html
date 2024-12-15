@@ -76,6 +76,25 @@
             cursor: pointer;
             margin-top: 10px;
         }
+        
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            text-decoration: none;
+            color: white;
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-color);
+        }
 
         .submit-btn {
             width: 100%;
@@ -120,6 +139,9 @@
             </div>
 
             <button type="button" class="add-genoma" onclick="addGenomaInput()">+ Adicionar Genoma</button>
+            <div style="text-align: center;">
+                <a href="{% url 'listar_simulacoes' %}" class="btn">Listar Simulações</a>
+            </div>
 
             <button type="submit" class="submit-btn">Realizar Simulação</button>
         </form>
