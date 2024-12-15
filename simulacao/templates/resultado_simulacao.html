@@ -148,10 +148,13 @@
         </div>
         <div class="heredograma-container">
             <h2>Heredograma</h2>
-            <div class="heredograma-container">
+            {% if heredograma %}
                 <img src="{{ heredograma }}" alt="Heredograma Genético">
-            </div>
+            {% else %}
+                <p>Não foi possível gerar o heredograma no momento.</p>
+            {% endif %}
         </div>
+        
 
         <!-- Botão para Listar Simulações -->
         <div style="text-align: center;">
