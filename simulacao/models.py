@@ -220,3 +220,74 @@ class Simulacao(models.Model):
                             dot.edge(parent_id, node_id)
                             dot.edge(parent_id_2, node_id)
         return dot
+
+    @staticmethod
+    def recriar_grafico(dados):
+        """Recria o gráfico de frequências baseado nos dados salvos."""
+        plt.figure(figsize=(10, 6))
+
+        geracoes = [f"Geração {dados['Geração']}" for dados in dados]
+        frequencias = {}
+
+        # Inicializa com frequências
+        for dados_item in dados:
+            for alelo in dados_item['Porcentagem']:
+                if alelo not in frequencias:
+                    frequencias[alelo] = [0] * len(dados)
+
+        # Preenche as porcentagens reais
+        for i, dados_item in enumerate(dados):
+            for alelo, porcentagem in dados_item['Porcentagem'].items():
+                frequencias[alelo][i] = porcentagem
+
+        # Plota as frequências em porcentagem
+        for idx, (alelo, freq) in enumerate(frequencias.items()):
+            linestyle = '--' if idx % 2 == 0 else '-'
+            marker = 'o' if idx % 2 == 0 else 's'
+            plt.plot(geracoes, freq, label=f"{alelo}", linestyle=linestyle, marker=marker)
+
+        # Configurações do gráfico
+        plt.title("Porcentagem de Frequência Genética por Geração")
+        plt.xlabel("Gerações")
+        plt.ylabel("Porcentagem (%)")
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+
+        # Salvar imagem em base64
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+        img = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        buffer.close()
+        plt.close()
+
+        return f"data:image/png;base64,{img}"
+
+    @staticmethod
+    def recriar_heredograma(dados):
+        """Recria o heredograma baseado nos dados salvos."""
+        geracoes = dados['geracoes']
+        dot = graphviz.Digraph(comment="Heredograma Genético", engine='dot')
+        dot.attr(rankdir='TB')
+        dot.attr('node', shape='box')
+
+        node_map = {}
+        for gen_index, geracao in enumerate(geracoes):
+            with dot.subgraph() as gen_subgraph:
+                gen_subgraph.attr(rank='same')
+
+                for genome_index, genoma in enumerate(geracao):
+                    node_id = f'gen{gen_index}_genome{genome_index}'
+                    gen_subgraph.node(node_id, label=genoma, style='filled', fillcolor='lightblue')
+
+                    if gen_index not in node_map:
+                        node_map[gen_index] = []
+                    node_map[gen_index].append(node_id)
+
+                    if gen_index > 0:
+                        parent_index = (genome_index // 4) * 2
+                        if parent_index < len(node_map[gen_index - 1]):
+                            dot.edge(node_map[gen_index - 1][parent_index], node_id)
+                            dot.edge(node_map[gen_index - 1][parent_index + 1], node_id)
+        return dot
