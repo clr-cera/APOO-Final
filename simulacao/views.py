@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 import matplotlib
 matplotlib.use('Agg')  # Define o backend adequado para uso no Django
 import matplotlib.pyplot as plt
 import graphviz
 import io
+=======
+from django.shortcuts import render
+from .models import Simulacao
+>>>>>>> 8b2005a6b5a227e4c09b6f78bc864df27ac9151d
 import base64
 import json
 
@@ -13,7 +18,6 @@ from .models import Simulacao
 from itertools import product
 
 
-from random import randint, shuffle, sample
 
 def realizar_simulacao(request):
     """Função principal que realiza a simulação genética."""
@@ -28,6 +32,7 @@ def realizar_simulacao(request):
                 'erro': 'Informe o número de gerações e ao menos 2 genomas.'
             })
 
+<<<<<<< HEAD
         # Inicia a simulação
         geracoes = [sequencias_genomas]
         for _ in range(1, numero_geracoes):
@@ -63,6 +68,9 @@ def realizar_simulacao(request):
         dot.format = 'png'
         img_data = dot.pipe()
         heredograma_base64 = base64.b64encode(img_data).decode('utf-8')
+=======
+        heredograma_base64, estatisticas, img, simulacao = Simulacao.propagar(sequencias_genomas, numero_geracoes)
+>>>>>>> 8b2005a6b5a227e4c09b6f78bc864df27ac9151d
 
         # Passa estatísticas explicitamente para o template
         return render(request, 'resultado_simulacao.html', {
@@ -76,6 +84,7 @@ def realizar_simulacao(request):
 
 
 
+<<<<<<< HEAD
 def gerar_combinacoes(pai, mae):
     """Gera combinações válidas de genes entre dois genomas."""
     filhos = []
@@ -323,3 +332,5 @@ def visualizar_simulacao(request, simulacao_id):
         'grafico': grafico,
         'heredograma': f"data:image/png;base64,{heredograma_base64}"
     })
+=======
+>>>>>>> 8b2005a6b5a227e4c09b6f78bc864df27ac9151d
