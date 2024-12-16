@@ -43,7 +43,6 @@ Para rodar o projeto corretamente, instale os seguintes itens:
    ```bash
    python3 -m pip install matplotlib
    ```
-
 ---
 
 ## Instalando as Dependências do Projeto
@@ -80,14 +79,6 @@ Antes de rodar o projeto pela primeira vez, aplique as migrações do banco de d
    python3 manage.py makemigrations
    python3 manage.py migrate
    ```
-
-### Criar um Superusuário (opcional)
-Para acessar o painel de administração do Django, crie um superusuário com o comando abaixo:
-```bash
-python3 manage.py createsuperuser
-```
-Siga as instruções para configurar o usuário e senha.
-
 ---
 
 ## Rodando o Projeto Django
