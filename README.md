@@ -1,7 +1,3 @@
-Aqui está a versão atualizada do texto com as informações sobre **migrações do banco de dados** para garantir que o projeto funcione corretamente ao ser inicializado.
-
----
-
 # Sistema de Simulação Genética
 Projeto em Django para a simulação de heranças genéticas.
 
